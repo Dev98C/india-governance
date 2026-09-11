@@ -40,6 +40,30 @@ const SECTOR_CAGR = {
 };
 STATES.forEach(s => s.sectorCagr = SECTOR_CAGR[s.name] || null);
 
+
+const GSDP_SIZE = {
+ 'Assam':{start:64692,end:643666.69},
+ 'Bihar':{start:100737,end:991997.21},
+ 'Chhattisgarh':{start:66874.89,end:567880.43},
+ 'Haryana':{start:128732.34,end:1213951.04},
+ 'Jharkhand':{start:66934.75,end:516255.36},
+ 'Karnataka':{start:227237.06,end:2883903.23},
+ 'Kerala':{start:153784.88,end:1248533.01},
+ 'Madhya Pradesh':{start:144576.81,end:1503395.40},
+ 'Maharashtra':{start:584497.66,end:4531515.84},
+ 'Odisha':{start:101839.47,end:890037.54},
+ 'Punjab':{start:127122.91,end:838636.61},
+ 'Rajasthan':{start:171042.73,end:1704338.55},
+ 'Tamil Nadu':{start:310525.73,end:3118590.30},
+ 'Telangana':{start:126970.70,end:1640901.43},
+ 'Uttar Pradesh':{start:336316.79,end:2978222.51},
+ 'Uttarakhand':{start:36795.42,end:378244.53},
+ 'West Bengal':{start:261681.87,end:1815000.91}
+};
+const formatGdpCr = v => v==null ? '—' : '₹'+Math.round(v).toLocaleString('en-IN')+' crore';
+const formatGdpLakhCrore = v => v==null ? '—' : '₹'+(v/100000).toFixed(2)+' lakh crore';
+const gsdpSize = s => GSDP_SIZE[s.name] || null;
+
 // Annual real GSDP levels (₹ lakh, constant 2011-12 prices), FY2011-12 → FY2024-25.
 // Source: RBI / NSO, Handbook of Statistics on Indian States 2024-25.
 const ANNUAL_REAL_GSDP = {
@@ -476,7 +500,15 @@ function renderStateDetail(name){
  <div class="detail-section-nav"><a href="#core-indicators">Core</a><a href="#labour-market">Labour</a><a href="#human-development">Human development</a><a href="#infrastructure">Infrastructure</a><a href="#investment">Investment</a><button class="subpage-link" data-view="state-last5" data-state="${s.name}">Last 5 years →</button></div>
 
  <section id="core-indicators" class="detail-section section-core">
-   <div class="section-kicker-row"><div><div class="eyebrow">01 · OUTPUT & INCOME</div><h2>Core indicators</h2><p class="section-subcopy">Long-run economic performance, using the common FY2011-12 → FY2024-25 window.</p></div><span class="tag">CAGR-based</span></div>
+   <div class="section-kicker-row"><div><div class="eyebrow">01 · OUTPUT & INCOME</div><h2>Core indicators</h2><p class="section-subcopy">Long-run economic performance. Growth rates use the common FY2011-12 → FY2024-25 window; GSDP size is anchored to FY2006-07 and FY2024-25 nominal estimates.</p></div><span class="tag">CAGR + size</span></div>
+   ${(()=>{const g=gsdpSize(s); return `<div class="gsdp-size-card">
+     <div class="gsdp-size-copy"><span class="kicker">ECONOMIC SCALE</span><h3>How large is the state economy?</h3><p>Nominal GSDP at current prices. This is a size snapshot, not a scored performance metric.</p><small>20-year political window: Sep 2006 → Sep 2026 · fiscal-year anchors shown because annual GSDP is reported by FY. Sources: FY2006-07 NITI/MoSPI state-wise estimates; FY2024-25 RBI Handbook of Statistics on Indian States.</small></div>
+     <div class="gsdp-size-endpoints">
+       <div class="gsdp-endpoint"><span>FY2006-07 · start anchor</span><strong>${formatGdpLakhCrore(g?.start)}</strong><small>${formatGdpCr(g?.start)}</small></div>
+       <div class="gsdp-arrow" aria-hidden="true">→</div>
+       <div class="gsdp-endpoint end"><span>FY2024-25 · latest complete anchor</span><strong>${formatGdpLakhCrore(g?.end)}</strong><small>${formatGdpCr(g?.end)}</small></div>
+     </div>
+   </div>`})()}
    <div class="core-layout">
      <div class="core-metrics-grid">
        ${metricTile('growth','growth','Real GSDP CAGR','realGdp',10,'% per year')}
