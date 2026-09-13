@@ -341,3 +341,23 @@
 .detail-hero.state-theme-mixed{background:linear-gradient(135deg,#f1f3f5 0%,#e9ecef 28%,#39434f 28%,#65727d 100%)}
 .nutrition-grid{margin-bottom:24px}.nutrition-feature{background:linear-gradient(135deg,#fbfffb,#f2f8f3);border-color:#d3e3d5}.nutrition-facts{margin-top:14px}.nutrition-facts>div{background:rgba(255,255,255,.72)}.nutrition-read{background:linear-gradient(135deg,#fff,#f7fbf7)}.nutrition-bars{margin-top:8px}.nutrition-bars .human-metric-row{margin:11px 0}.nutrition-bars .human-track i{background:#4f9466}
 @media(max-width:680px){.human-section{padding-left:14px}.detail-hero.state-theme-bjp,.detail-hero.state-theme-nonbjp,.detail-hero.state-theme-mixed{background:var(--ink)}}
+
+/* Human Resources: section-specific bar colours + state-specific field reports */
+.human-track i{transition:width .25s ease}
+.human-track i{background:#59636d}
+.human-metric-row.health .human-track i{background:#d85c4a}
+.human-metric-row.system .human-track i{background:#4c6fd7}
+.human-metric-row.education .human-track i{background:#d88b2b}
+.human-metric-row.nutrition .human-track i{background:#4f9466}
+.human-metric-row.wash .human-track i{background:#2e8d91}
+.field-report-grid{grid-template-columns:repeat(4,1fr)}
+.field-report-card{border-top:3px solid var(--line);min-height:150px}
+.field-report-card.field-report-health{border-top-color:#d85c4a;background:linear-gradient(180deg,#fff7f4,#fff)}
+.field-report-card.field-report-education{border-top-color:#d88b2b;background:linear-gradient(180deg,#fff9ed,#fff)}
+.field-report-card.field-report-nutrition{border-top-color:#4f9466;background:linear-gradient(180deg,#f3faf4,#fff)}
+.field-report-card.field-report-wash{border-top-color:#2e8d91;background:linear-gradient(180deg,#effafa,#fff)}
+.field-report-kicker{display:block;margin-top:10px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.field-report-card p{margin-top:8px}
+.wash-report{background:linear-gradient(135deg,#f1fbfb,#fff)}
+@media(max-width:1000px){.field-report-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.field-report-grid{grid-template-columns:1fr}}
