@@ -94,6 +94,39 @@ function groupSeries(group){
  return GDP_YEARS.map((_,i)=>names.reduce((acc,n)=>acc+ANNUAL_REAL_GSDP[n][i],0));
 }
 
+
+// ---- Human Resources report card: latest verified cross-state indicators ----
+// This is a separate analytical page. It is deliberately NOT folded into the main composite.
+// Vintages differ by source: NFHS-6 2023-24; UDISE+ 2024-25; ASER 2024; Health Dynamics/HMIS 2021-22.
+const HUMAN_RESOURCES = {
+ 'Assam':{health:60,education:41,wash:97.6,vax:81.7,reading:32.8,distHosp:27,distBeds:189},
+ 'Bihar':{health:67,education:32,wash:99.6,vax:77.3,reading:41.2,distHosp:36,distBeds:114},
+ 'Chhattisgarh':{health:56,education:63,wash:98.8,vax:77.9,reading:52.3,distHosp:27,distBeds:142},
+ 'Haryana':{health:73,education:77,wash:100,vax:79.7,reading:53.9,distHosp:22,distBeds:166},
+ 'Jharkhand':{health:77,education:61,wash:98.8,vax:78.1,reading:40.3,distHosp:21,distBeds:129},
+ 'Karnataka':{health:80,education:63,wash:99.9,vax:90.2,reading:32.8,distHosp:26,distBeds:319},
+ 'Kerala':{health:80,education:82,wash:99.9,vax:84.9,reading:58.2,distHosp:48,distBeds:297},
+ 'Madhya Pradesh':{health:56,education:49,wash:98.9,vax:81.5,reading:37.5,distHosp:51,distBeds:325},
+ 'Maharashtra':{health:84,education:67,wash:99.6,vax:83.4,reading:57.9,distHosp:59,distBeds:213},
+ 'Odisha':{health:73,education:40,wash:100,vax:90.8,reading:57.2,distHosp:32,distBeds:263},
+ 'Punjab':{health:79,education:75,wash:100,vax:77.7,reading:66.0,distHosp:26,distBeds:170},
+ 'Rajasthan':{health:73,education:63,wash:98.7,vax:80.6,reading:37.7,distHosp:29,distBeds:298},
+ 'Tamil Nadu':{health:77,education:76,wash:99.6,vax:90.0,reading:37.0,distHosp:20,distBeds:348},
+ 'Telangana':{health:73,education:64,wash:99.5,vax:80.9,reading:29.3,distHosp:12,distBeds:279},
+ 'Uttar Pradesh':{health:61,education:54,wash:99.4,vax:81.4,reading:50.5,distHosp:162,distBeds:141},
+ 'Uttarakhand':{health:84,education:73,wash:99.0,vax:86.0,reading:60.3,distHosp:13,distBeds:97},
+ 'West Bengal':{health:79,education:60,wash:99.9,vax:88.1,reading:53.9,distHosp:37,distBeds:462}
+};
+const humanData = s => HUMAN_RESOURCES[s.name] || {};
+const HUMAN_SOURCES = {
+ health:'NITI Aayog SDG India Index 2023-24 · Goal 3',
+ education:'NITI Aayog SDG India Index 2023-24 · Goal 4',
+ vax:'MoHFW / IIPS NFHS-6 2023-24',
+ reading:'ASER 2024 Rural · government-school Std V reading',
+ wash:'UDISE+ 2024-25 · functional drinking-water facility in schools',
+ capacity:'Health Dynamics / HMIS · FY2021-22 district-hospital functional beds'
+};
+
 // ---- Recent 5-year panel: FY2020-21 -> FY2024-25 ----
 const RECENT5_CORE = {
   'Assam':{realGdp:9.00,nominalGdp:17.32,pc:8.11}, 'Bihar':{realGdp:9.55,nominalGdp:14.97,pc:7.87},
@@ -230,6 +263,7 @@ function navigate(view, stateName=null){
  window.scrollTo({top:0,behavior:'smooth'});
  if(view==='state-detail') renderStateDetail(stateName);
  if(view==='state-last5') renderStateLast5(stateName);
+ if(view==='state-human') renderStateHuman(stateName);
 }
 
 document.addEventListener('click', e=>{
@@ -497,7 +531,7 @@ function renderStateDetail(name){
    </div>
    <div class="detail-score-hero"><div class="eyebrow">Composite score</div><div class="big-score">${s.score.toFixed(1)}</div><div class="score-context">/ 100 · ${benchmarkLabel} comparator</div></div>
  </div>
- <div class="detail-section-nav"><a href="#core-indicators">Core</a><a href="#labour-market">Labour</a><a href="#human-development">Human development</a><a href="#infrastructure">Infrastructure</a><a href="#investment">Investment</a><button class="subpage-link" data-view="state-last5" data-state="${s.name}">Last 5 years →</button></div>
+ <div class="detail-section-nav"><a href="#core-indicators">Core</a><a href="#labour-market">Labour</a><a href="#human-development">Human development</a><a href="#infrastructure">Infrastructure</a><a href="#investment">Investment</a><button class="subpage-link" data-view="state-last5" data-state="${s.name}">Last 5 years →</button><button class="subpage-link human-subpage-link" data-view="state-human" data-state="${s.name}">Human Resources →</button></div>
 
  <section id="core-indicators" class="detail-section section-core">
    <div class="section-kicker-row"><div><div class="eyebrow">01 · OUTPUT & INCOME</div><h2>Core indicators</h2><p class="section-subcopy">Long-run economic performance. Growth rates use the common FY2011-12 → FY2024-25 window; GSDP size is anchored to FY2006-07 and FY2024-25 nominal estimates.</p></div><span class="tag">CAGR + size</span></div>
@@ -703,6 +737,54 @@ function renderStateLast5(name){
  </div>
  ${recent5AnalyticalRead(s)}
  <div class="panel recent5-data-status"><div class="panel-title-row"><h3>Data provenance</h3><span class="tag">Verified recent panel</span></div><p class="muted">Economic data: RBI/MoSPI Handbook of Statistics on Indian States 2024-25. Labour: PLFS 2020-21 and 2024-25. Human development: NITI Aayog SDG India Index 2020-21 and 2023-24. Infrastructure and investment use the latest verified institutional vintages where a fully harmonised annual FY2020-21 → FY2024-25 series is not published consistently across states.</p></div>`;
+}
+
+
+function humanMetricBar(label,value,benchmark,max,format,lowerBetter=false){
+ const width=value==null?0:Math.max(0,Math.min(100,(lowerBetter?(max-value):value)/max*100));
+ const bpos=benchmark==null?null:Math.max(0,Math.min(100,(lowerBetter?(max-benchmark):benchmark)/max*100));
+ return `<div class="human-metric-row"><div class="human-metric-top"><span>${label}</span><strong>${format(value)}</strong></div><div class="human-track"><i style="width:${width}%"></i>${bpos==null?'':`<em style="left:${bpos}%"></em>`}</div><small>${benchmark==null?'':`India ${format(benchmark)}`}</small></div>`;
+}
+function humanCategoryCard(s, key, title, kicker, body, tone='neutral'){
+ return `<article class="human-category-card ${tone}"><div class="human-card-head"><div><span class="kicker">${kicker}</span><h3>${title}</h3></div>${body}</div></article>`;
+}
+function renderStateHuman(name){
+ const s=STATES.find(x=>x.name===name)||STATES[0];
+ const c=document.getElementById('state-human-content'); const d=humanData(s); const colorClass=groupClass(s.group);
+ const peers=STATES.filter(x=>x.name!==s.name);
+ const india={health:77,education:61,wash:99.0,vax:82.6,reading:48.7,distBeds:210};
+ const rank=(key,lower=false)=>{const vals=STATES.map(x=>humanData(x)[key]).filter(v=>v!=null).sort((a,b)=>lower?a-b:b-a); const v=d[key]; return v==null?'—':vals.indexOf(v)+1;};
+ const stateVs=(key, lower=false)=>{const vals=peers.map(x=>humanData(x)[key]).filter(v=>v!=null); const med=median(vals); if(d[key]==null||med==null)return null; return lower?med-d[key]:d[key]-med;};
+ const healthGap=stateVs('health'), eduGap=stateVs('education'), readGap=stateVs('reading'), washGap=stateVs('wash');
+ const narrative=[];
+ if(healthGap!=null) narrative.push(healthGap>=3?'Health outcomes sit above the analytical-sample median.':'Health outcomes are below the analytical-sample median.');
+ if(eduGap!=null) narrative.push(eduGap>=3?'The education system is a relative strength.':eduGap<=-3?'Education is a material gap relative to peers.':'Education sits close to the peer median.');
+ if(readGap!=null) narrative.push(readGap>=3?'Learning outcomes are relatively strong in rural government schools.':readGap<=-3?'Learning outcomes lag the state’s peer set despite access to schooling.':'Learning outcomes are broadly mid-pack.');
+ if(washGap!=null) narrative.push(washGap>=0.5?'School drinking-water functionality is broadly strong.':'School water functionality is weaker than the peer median.');
+ const metricCard=(k,label,unit,max,lower=false,bench=india[k],fmt=v=>v==null?'—':v.toFixed(1))=>humanMetricBar(label,d[k],bench,max,fmt,lower);
+ c.innerHTML=`
+ <div class="detail-hero state-theme-${colorClass}">
+   <div class="detail-title"><div class="eyebrow">${icon('human')} Human resources report card</div><h1>${s.name} · Human Resources</h1><p>This page goes beneath the headline governance score to examine the human-capital system: <b>health outcomes, healthcare capacity, education & learning, nutrition and water/sanitation</b>. It is deliberately kept separate from the main composite.</p><div class="detail-hero-meta"><span class="state-chip ${colorClass}">${s.group}</span><span>Latest verified cross-state evidence</span><span>No synthetic score yet</span></div></div>
+   <div class="detail-score-hero"><div class="eyebrow">Human development reference</div><div class="big-score">${s.sdg.toFixed(0)}</div><div class="score-context">/100 · overall SDG India Index</div><div class="human-hero-note">Shown for context only; it is not reused as a second composite score.</div></div>
+ </div>
+ <div class="state-subpage-nav"><button class="back-btn" data-view="state-detail" data-state="${s.name}">← Back to ${s.name}</button><button class="subpage-nav-btn" data-view="state-last5" data-state="${s.name}">Last 5 Years</button><span class="subpage-current">Human Resources</span></div>
+ <div class="human-framework"><div><span class="kicker">THE HUMAN-CAPITAL PIPELINE</span><h2>From inputs to lived outcomes</h2><p>Coverage alone is not enough. The report card separates <b>capacity → access → outcomes</b>, so a state cannot look strong simply because a scheme or facility exists on paper.</p></div><div class="human-pipeline"><span>Health & education capacity</span><b>→</b><span>Access & functionality</span><b>→</b><span>Human outcomes</span></div></div>
+ <div class="section-header"><div><div class="eyebrow">01 · HEALTH</div><h2>Health outcomes</h2><p class="section-subcopy">Outcome layer, anchored to NITI’s comparable SDG Goal 3 score and NFHS-6 vaccination coverage.</p></div><span class="tag">NFHS-6 · 2023-24</span></div>
+ <div class="human-grid-two">
+  <article class="panel human-feature"><div class="human-feature-head"><div><span class="kicker">GOOD HEALTH & WELL-BEING</span><h3>SDG Goal 3</h3></div><strong>${d.health}<small>/100</small></strong></div>${humanMetricBar('NITI Goal 3 score',d.health,india.health,100,v=>v==null?'—':v.toFixed(0))}<div class="human-facts"><div><span>Full child immunisation</span><strong>${d.vax.toFixed(1)}%</strong><small>NFHS-6 · age 12–23 months</small></div><div><span>Peer rank</span><strong>#${rank('health')}</strong><small>17-state sample</small></div></div></article>
+  <article class="panel human-read"><div class="panel-title-row"><h3>What to look at</h3><span class="tag">Outcome, not spending</span></div><p>Goal 3 is the broad comparable outcome benchmark. Vaccination is shown separately because it is a concrete service-delivery indicator rather than another aggregate index.</p><div class="human-callout">${d.vax>=85?'High vaccination coverage is a clear service-delivery strength.':d.vax<80?'Vaccination coverage remains a meaningful gap.':'Vaccination coverage is in the middle range.'}</div></article>
+ </div>
+ <div class="section-header"><div><div class="eyebrow">02 · HEALTH SYSTEM</div><h2>Healthcare capacity & access</h2><p class="section-subcopy">Actual district-hospital capacity is shown alongside the outcome score. Capacity data are older than NFHS-6 and should not be mistaken for a 2026 snapshot.</p></div><span class="tag">FY2021-22 capacity vintage</span></div>
+ <div class="human-grid-two"><article class="panel human-capacity"><div class="human-capacity-grid"><div><span>District hospitals</span><strong>${d.distHosp}</strong><small>state total · 2021-22</small></div><div><span>Average functional beds / district hospital</span><strong>${d.distBeds}</strong><small>2021-22</small></div><div><span>Capacity rank</span><strong>#${rank('distBeds')}</strong><small>higher is better</small></div></div><p class="panel-foot">Raw facility counts are context, not performance scores. A large state will naturally have more facilities; functional capacity per facility is more informative.</p></article><article class="panel human-read"><div class="panel-title-row"><h3>Capacity vs outcome</h3><span class="tag">Diagnostic</span></div><p>${d.distBeds>=india.distBeds?'District-hospital functional bed capacity per facility is above the national average.':'District-hospital functional bed capacity per facility is below the national average.'} ${d.health>=77?'Health outcomes are also at or above the India Goal 3 benchmark.':'Health outcomes remain below the India Goal 3 benchmark.'}</p><div class="human-callout">The interesting question is whether capacity is translating into accessible, high-quality care — not simply how many buildings exist.</div></article></div>
+ <div class="section-header"><div><div class="eyebrow">03 · EDUCATION</div><h2>Education access & actual learning</h2><p class="section-subcopy">System quality and foundational learning are kept separate. ASER is rural and sample-based; it is used as an outcome check, not a universal school census.</p></div><span class="tag">UDISE+ 2024-25 · ASER 2024</span></div>
+ <div class="human-grid-two"><article class="panel human-feature"><div class="human-feature-head"><div><span class="kicker">QUALITY EDUCATION</span><h3>System score</h3></div><strong>${d.education}<small>/100</small></strong></div>${humanMetricBar('NITI Goal 4 score',d.education,india.education,100,v=>v==null?'—':v.toFixed(0))}<div class="human-facts"><div><span>Std V reading</span><strong>${d.reading.toFixed(1)}%</strong><small>Government-school children able to read Std II text · rural ASER 2024</small></div><div><span>Learning rank</span><strong>#${rank('reading')}</strong><small>17-state sample</small></div></div></article><article class="panel human-read"><div class="panel-title-row"><h3>Access ≠ learning</h3><span class="tag">Key diagnostic</span></div><p>UDISE+ can tell us whether schools have infrastructure and functionality. ASER tells us whether children can actually perform basic reading tasks. Keeping these separate prevents “school availability” from being mistaken for educational quality.</p><div class="human-callout">${d.reading>=india.reading?'Learning is above the India rural-government-school benchmark.':'Learning is below the India rural-government-school benchmark.'}</div></article></div>
+ <div class="section-header"><div><div class="eyebrow">04 · NUTRITION</div><h2>Nutrition & child development</h2><p class="section-subcopy">NFHS-6 provides the primary nutrition evidence. The full state fact sheet is retained as the source layer for stunting, wasting, underweight and diet indicators.</p></div><span class="tag">NFHS-6 · 2023-24</span></div>
+ <article class="panel human-data-table"><div class="panel-title-row"><div><h3>Nutrition evidence to be read together</h3><p class="section-subcopy">The dashboard deliberately avoids turning one nutrition statistic into a synthetic score.</p></div><span class="tag">Outcome bundle</span></div><div class="human-mini-grid"><div><span>Child stunting</span><strong>NFHS-6</strong><small>height-for-age</small></div><div><span>Child wasting</span><strong>NFHS-6</strong><small>weight-for-height</small></div><div><span>Child underweight</span><strong>NFHS-6</strong><small>weight-for-age</small></div><div><span>Adequate child diet</span><strong>NFHS-6</strong><small>6–23 months</small></div></div><p class="panel-foot">These measures are kept as a bundle because nutrition is multidimensional. A state can improve stunting while acute wasting or diet adequacy remains problematic.</p></article>
+ <div class="section-header"><div><div class="eyebrow">05 · WASH</div><h2>Water, sanitation & living environment</h2><p class="section-subcopy">School drinking-water functionality is a concrete administrative indicator. It is paired with the broader SDG 6 benchmark already used elsewhere in the research.</p></div><span class="tag">UDISE+ 2024-25</span></div>
+ <div class="human-grid-two"><article class="panel human-feature"><div class="human-feature-head"><div><span class="kicker">FUNCTIONALITY</span><h3>School drinking water</h3></div><strong>${d.wash.toFixed(1)}<small>%</small></strong></div>${humanMetricBar('Schools with functional drinking-water facility',d.wash,india.wash,100,v=>v==null?'—':v.toFixed(1)+'%')}<div class="human-facts"><div><span>Broader SDG 6</span><strong>${s.name==='Assam'?'85':s.name==='Bihar'?'98':s.name==='Chhattisgarh'?'93':s.name==='Haryana'?'80':s.name==='Jharkhand'||s.name==='West Bengal'?'86':s.name==='Karnataka'||s.name==='Tamil Nadu'?'90':s.name==='Kerala'||s.name==='Madhya Pradesh'?'87':s.name==='Maharashtra'?'93':s.name==='Odisha'?'88':s.name==='Punjab'?'74':s.name==='Rajasthan'?'60':s.name==='Telangana'?'90':s.name==='Uttar Pradesh'?'92':s.name==='Uttarakhand'?'94':'—'}</strong><small>NITI Goal 6 score</small></div><div><span>School water rank</span><strong>#${rank('wash')}</strong><small>17-state sample</small></div></div></article><article class="panel human-read"><div class="panel-title-row"><h3>The Gujarat lesson</h3><span class="tag">Coverage ≠ quality</span></div><p>The CAG finding you brought into this research is exactly why this category matters: infrastructure coverage does not automatically establish that water is safe or that a service is functioning well. The headline score therefore uses functional school-water availability, while water-quality audits remain a separate diagnostic evidence layer.</p><div class="human-callout">A pipe, a toilet or a school facility is an input. Safe water, sanitation and actual use are outcomes.</div></article></div>
+ <div class="section-header"><div><div class="eyebrow">ANALYTICAL READ</div><h2>What the human-resource numbers suggest</h2></div><span class="tag">Interpretation, not ranking alone</span></div>
+ <div class="human-insight-grid">${narrative.map((t,i)=>`<article class="panel human-insight"><span class="analysis-index">0${i+1}</span><p>${t}</p></article>`).join('')}</div>
+ <div class="panel human-provenance"><div class="panel-title-row"><h3>Data provenance & limitations</h3><span class="tag">Important</span></div><p><b>NFHS-6:</b> 2023-24 state fact sheets; <b>UDISE+:</b> 2024-25 school infrastructure; <b>ASER:</b> 2024 rural learning assessment; <b>Health Dynamics/HMIS:</b> 2021-22 district-hospital capacity. The vintages are not identical, so this page is a <b>latest-evidence report card</b>, not a single-year panel. NITI Goal 3/4/6 scores are shown as external benchmarks and are not combined with the underlying indicators to avoid double counting.</p></div>`;
 }
 
 function sampleSdgRank(s){
